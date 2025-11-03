@@ -3,10 +3,8 @@ const router = express.Router();
 const authMiddleware = require('../middleware/auth');
 const { Item } = require('../models');
 
-// pake auth untuk semua route di sini
 router.use(authMiddleware);
 
-// GET /api/items -> list items milik user
 router.get('/', async (req, res) => {
   try {
     const items = await Item.findAll({ where: { userId: req.user.id }, order: [['createdAt', 'DESC']] });
@@ -17,7 +15,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/items -> create
 router.post('/', async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -30,7 +27,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/items/:id -> update (only owner)
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -48,7 +44,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/items/:id -> delete
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
