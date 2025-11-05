@@ -1,22 +1,26 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
-const User = require('./user');
+module.exports = (sequelize, DataTypes) => {
+    const Item = sequelize.define('Item', {
+        title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        },
+        description: {
+        type: DataTypes.STRING,
+        },
+        userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Users',
+            key: 'id',
+        },
+        onDelete: 'CASCADE',
+        },
+    });
 
-const Item = sequelize.define('Item', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  title: { type: DataTypes.STRING, allowNull: false },
-  description: { type: DataTypes.TEXT, allowNull: true },
-  userId: { type: DataTypes.INTEGER, allowNull: false },
-}, {
-  tableName: 'items',
-  timestamps: true,
-});
+    Item.associate = (models) => {
+        Item.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+    };
 
-Item.belongsTo(User, { foreignKey: 'userId' });
-User.hasMany(Item, { foreignKey: 'userId' });
-
-module.exports = Item;
+    return Item;
+};

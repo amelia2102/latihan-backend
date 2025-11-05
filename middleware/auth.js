@@ -1,16 +1,21 @@
 const jwt = require('jsonwebtoken');
+const { User } = require('../models');
 
-module.exports = function (req, res, next) {
-  const token = req.header('Authorization')?.split(' ')[1];
-  if (!token) {
-    return res.status(401).json({ message: 'Akses ditolak. Token tidak ditemukan.' });
-  }
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
-  try {
-    const verified = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = verified;
-    next();
-  } catch (err) {
-    res.status(400).json({ message: 'Token tidak valid.' });
-  }
+module.exports = async (req, res, next) => {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'Token required' });
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findByPk(decoded.id);
+        if (!user) return res.status(401).json({ message: 'User not found' });
+
+        req.user = { id: user.id };
+        next();
+    } catch (err) {
+        console.error('Auth error:', err);
+        res.status(401).json({ message: 'Token invalid' });
+    }
 };
